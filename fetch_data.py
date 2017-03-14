@@ -111,6 +111,7 @@ def handle_data(context, data):
     high_price = df['high'][0]
     low_price = df['low'][0]
     volume = df['volume'][0]
-    print str(open_price) + " " + str(close_price) + " " + str(high_price) + " " + str(low_price) + " " + str(volume) + " " + str(turnover_ratio)
+    money = df['money'][0]
+    print str(open_price) + " " + str(close_price) + " " + str(high_price) + " " + str(low_price) + " " + str(volume) + " " + str(turnover_ratio) + " " + str(money)
     g.count = g.count + 1
     

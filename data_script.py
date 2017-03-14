@@ -17,6 +17,7 @@ if __name__ == '__main__':
     low_price_list = []
     volume_list = []
     turnover_ratio_list = []
+    money_list = []
 
     for line in fcontent:
         col_content = line.split(' ')
@@ -29,6 +30,7 @@ if __name__ == '__main__':
                 low_price = float(col_content[8])
                 volume = float(col_content[9])
                 turnover_ratio = float(col_content[10])
+                money = float(col_content[11])
                 if volume==0.0 or np.isnan(volume) or turnover_ratio==0.0 or np.isnan(turnover_ratio):
                     continue
                 else:
@@ -39,10 +41,11 @@ if __name__ == '__main__':
                     low_price_list.append(low_price)
                     volume_list.append(volume)
                     turnover_ratio_list.append(turnover_ratio)
+                    money_list.append(money)
                     #data = {'Time':col_content[0], 'Open':open_price, 'Close':close_price, 'High':high_price, 'Low':low_price, 'Volume':volume, 'Turnover_ratio':turnover_ratio}
                     #data_list.append(data)
 
-    s = pd.DataFrame({'Time':pd.Series(time_list), 'Open':pd.Series(open_price_list), 'Close':pd.Series(close_price_list), 'High':pd.Series(high_price_list), 'Low':pd.Series(low_price_list), 'Volume':pd.Series(volume_list), 'Turnover_ratio':pd.Series(turnover_ratio_list)})
+    s = pd.DataFrame({'Time':pd.Series(time_list), 'Open':pd.Series(open_price_list), 'Close':pd.Series(close_price_list), 'High':pd.Series(high_price_list), 'Low':pd.Series(low_price_list), 'Volume':pd.Series(volume_list), 'Turnover_ratio':pd.Series(turnover_ratio_list)}, 'Money':pd.Series(money_list))
     #s = pd.Series(data_list)
     print s.columns
     s.to_csv(outfile)
