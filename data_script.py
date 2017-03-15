@@ -45,7 +45,7 @@ if __name__ == '__main__':
                     #data = {'Time':col_content[0], 'Open':open_price, 'Close':close_price, 'High':high_price, 'Low':low_price, 'Volume':volume, 'Turnover_ratio':turnover_ratio}
                     #data_list.append(data)
 
-    s = pd.DataFrame({'Time':pd.Series(time_list), 'Open':pd.Series(open_price_list), 'Close':pd.Series(close_price_list), 'High':pd.Series(high_price_list), 'Low':pd.Series(low_price_list), 'Volume':pd.Series(volume_list), 'Turnover_ratio':pd.Series(turnover_ratio_list)}, 'Money':pd.Series(money_list))
+    s = pd.DataFrame({'Time':pd.Series(time_list), 'Open':pd.Series(open_price_list), 'Close':pd.Series(close_price_list), 'High':pd.Series(high_price_list), 'Low':pd.Series(low_price_list), 'Volume':pd.Series(volume_list), 'Turnover_ratio':pd.Series(turnover_ratio_list), 'Money':pd.Series(money_list)})
     #s = pd.Series(data_list)
     print s.columns
     s.to_csv(outfile)
