@@ -19,6 +19,16 @@ if __name__ == '__main__':
     turnover_ratio_list = []
     money_list = []
 
+    nan_data_list = []
+    nan_time_list = []
+    nan_open_price_list = []
+    nan_close_price_list = []
+    nan_high_price_list = []
+    nan_low_price_list = []
+    nan_volume_list = []
+    nan_turnover_ratio_list = []
+    nan_money_list = []
+
     for line in fcontent:
         col_content = line.split(' ')
         if len(col_content) > 2:
@@ -32,6 +42,14 @@ if __name__ == '__main__':
                 turnover_ratio = float(col_content[10])
                 money = float(col_content[11])
                 if volume==0.0 or np.isnan(volume) or turnover_ratio==0.0 or np.isnan(turnover_ratio):
+                    nan_time_list.append(time)
+                    nan_open_price_list.append(open_price)
+                    nan_close_price_list.append(close_price)
+                    nan_high_price_list.append(high_price)
+                    nan_low_price_list.append(low_price)
+                    nan_volume_list.append(volume)
+                    nan_turnover_ratio_list.append(turnover_ratio)
+                    nan_money_list.append(money)
                     continue
                 else:
                     time_list.append(time)
@@ -46,6 +64,8 @@ if __name__ == '__main__':
                     #data_list.append(data)
 
     s = pd.DataFrame({'Time':pd.Series(time_list), 'Open':pd.Series(open_price_list), 'Close':pd.Series(close_price_list), 'High':pd.Series(high_price_list), 'Low':pd.Series(low_price_list), 'Volume':pd.Series(volume_list), 'Turnover_ratio':pd.Series(turnover_ratio_list), 'Money':pd.Series(money_list)})
+    nan_s = pd.DataFrame({'Time':pd.Series(nan_time_list), 'Open':pd.Series(nan_open_price_list), 'Close':pd.Series(nan_close_price_list), 'High':pd.Series(nan_high_price_list), 'Low':pd.Series(nan_low_price_list), 'Volume':pd.Series(nan_volume_list), 'Turnover_ratio':pd.Series(nan_turnover_ratio_list), 'Money':pd.Series(nan_money_list)})
     #s = pd.Series(data_list)
     print s.columns
     s.to_csv(outfile)
+    nan_s.to_csv(outfile+'.nan.csv')
