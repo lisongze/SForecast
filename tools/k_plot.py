@@ -11,7 +11,7 @@ from bokeh.models import ColumnDataSource, Rect, HoverTool, Range1d, LinearAxis,
 output_file("kline.html")
 
 infile = sys.argv[1]
-quotes = pd.read_csv(infile)
+quotes = pd.read_csv(infile, index_col=[0])
 #quotes[quotes['Volume']==0]=np.nan
 quotes= quotes.dropna()
 openp=quotes['Open']
@@ -23,9 +23,11 @@ money=quotes['Money']
 #time=quotes.index
 #date=[x.strftime("%Y-%m-%d") for x in quotes.index]
 #time=quotes['Time']
-time=[datetime.strptime(x, '%Y-%m-%d') for x in quotes['Time']]
+print quotes.columns
+time=[datetime.strptime(x, '%Y-%m-%d') for x in quotes.index]
 date=[x.strftime("%Y-%m-%d") for x in time]
 quotes['Date']=time
+quotes['Time']=quotes.index
 
 
 w = 12*60*60*1000 # half day in ms
