@@ -1,7 +1,16 @@
 import sys, os
+import math
 import numpy as np
 import pandas as pd
 import datetime
+
+trade_start_day = datetime.datetime.strptime('2015-01-04', '%Y-%m-%d')
+new_stock_day_offset = 120
+halt_day_offset = 20
+up_ratio_thre1 = 0.15
+low_ratio_thre1 = -0.05
+up_ratio_thre2 = 0.15
+low_ratio_thre2 = -0.05
 
 def isHalt(open_price, close_price, high_price, low_price):
     if open_price==close_price==high_price==low_price:
@@ -9,9 +18,32 @@ def isHalt(open_price, close_price, high_price, low_price):
     else:
         return False
 
+def isSample(history, forecast):
+    label = 1
+    history_close_price = [float(x) for x in history['Close']]
+    forecast_close_price = [float(x) for x in forecast['Close']]
+    reference_price = history_close_price[-1]
+    if (max(forecast_close_price)-reference_price) / reference_price > up_ratio_thre1 && (min(forecast_close_price)-reference_price) / reference_price < low_ratio_thre1:
+        label = 1
+    if (max(forecast_close_price)-reference_price) / reference_price < up_ratio_thre2 && (min(forecast_close_price)-reference_price) / reference_price > low_ratio_thre2:
+        label = -1
+    return label
+
+def doLabel(history, forecast):
+    return True
+
+def isNewStock(first_day):
+    offset_day = first_day - trade_start_day
+    if offset_day.days>0:
+        return True
+    return False
+
 if __name__ == '__main__':
     infile = sys.argv[1]
     csv_content = pd.read_csv(infile, index_col=[0])
+    first_day = datetime.datetime.strptime(csv_content.index[0],'%Y-%m%d')
+    if isNewStock(first_day)==True:
+        csv_content = csv_content.icol[new_stock_day_offset:]
     date = [datetime.datetime.strptime(x, '%Y-%m-%d') for x in csv_content.index]
     sample_len_thre = 44
     epoch_start = x[0]
@@ -60,3 +92,16 @@ if __name__ == '__main__':
     samples = [x for x in samples if x['days']>sample_len_thre]
     for x in samples:
         print 'start: ', x['start'], ', end: ', x['end'], ', days: ', x['days']
+
+    day_stride = 1
+    history_days = 30
+    forecast_days = 14
+    labels = []
+    for x in samples:
+        end_day_index = x['days']-sample_len_thre+1
+        for i in range(0, end_day_index, day_stride):
+            history = csv_content.iloc[i+0 : i+history_days] 
+            forecast = csv_content.iloc[i+history_days : i+history_days+forecast_days]
+            if isSample(history, forecast)==True:
+                label = doLabel(history, forecast)
+                labels.append(label)
