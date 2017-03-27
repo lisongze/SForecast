@@ -9,6 +9,12 @@ def isHalt(open_price, close_price, high_price, low_price):
     else:
         return False
 
+def isSample(history, forecast):
+    return True
+
+def doLabel(history, forecast):
+    return True
+
 if __name__ == '__main__':
     infile = sys.argv[1]
     csv_content = pd.read_csv(infile, index_col=[0])
@@ -60,3 +66,16 @@ if __name__ == '__main__':
     samples = [x for x in samples if x['days']>sample_len_thre]
     for x in samples:
         print 'start: ', x['start'], ', end: ', x['end'], ', days: ', x['days']
+
+    day_stride = 1
+    history_days = 30
+    forecast_days = 14
+    labels = []
+    for x in samples:
+        end_day_index = x['days']-sample_len_thre+1
+        for i in range(0, end_day_index, day_stride):
+            history = csv_content.iloc[i+0 : i+history_days] 
+            forecast = csv_content.iloc[i+history_days : i+history_days+forecast_days]
+            if isSample(history, forecast)==True:
+                label = doLabel(history, forecast)
+                labels.append(label)
