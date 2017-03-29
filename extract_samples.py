@@ -18,7 +18,7 @@ def isHalt(open_price, close_price, high_price, low_price):
     else:
         return False
 
-def isSample(history, forecast):
+def getSampleType(history, forecast):
     label = 1
     history_close_price = [float(x) for x in history['Close']]
     forecast_close_price = [float(x) for x in forecast['Close']]
@@ -29,8 +29,75 @@ def isSample(history, forecast):
         label = -1
     return label
 
-def doLabel(history, forecast):
-    return True
+def doLabel(history, forecast, sample_type):
+    ref_open_price = history['Open'][-1]
+    ref_close_price = history['Close'][-1]
+    ref_high_price = history['High'][-1]
+    ref_low_price = history['Low'][-1]
+    ref_turnover_ratio = history['Turnover_ratio'][-1]
+    ref_volumn = history['Volumn'][-1]
+
+    history_norm = []
+    '''
+    history_norm_open_price = []
+    history_norm_close_price = []
+    history_norm_high_price = []
+    history_norm_low_price = []
+    history_norm_turnover_ratio = []
+    history_norm_volumn = []
+
+    forecast_norm = []
+    forecast_norm_open_price = []
+    forecast_norm_close_price = []
+    forecast_norm_high_price = []
+    forecast_norm_low_price = []
+    forecast_norm_turnover_ratio = []
+    forecast_norm_volumn = []
+    '''
+    
+    for index, row in history.iterrows():
+        norm_open_price = row['Open'] / ref_open_price
+        norm_close_price = row['Close'] / ref_close_price
+        norm_high_price = row['High'] / ref_high_price
+        norm_low_price = row['Low'] / ref_low_price
+        norm_turnover_ratio = row['Turnover_ratio'] / ref_turnover_ratio
+        norm_volumn = row['Volumn'] / ref_volumn
+
+        day_data = {'open': norm_open_price, 'close': norm_close_price, 'high': norm_high_price, 'low': norm_low_price, 'turnover_ratio': norm_turnover_ratio, 'volumn': norm_volumn}
+        history_norm.append(day_data)
+
+        '''
+        history_norm_open_price .append(norm_open_price)
+        history_norm_close_price.append(norm_close_price)
+        history_norm_high_price.append(norm_high_price)
+        history_norm_low_price.append(norm_low_price)
+        history_norm_turnover_ratio.append(norm_turnover_ratio)
+        history_norm_volumn.append(norm_volumn)
+        '''
+
+    for index, row in forecast.iterrows():
+        norm_open_price = row['Open'] / ref_open_price
+        norm_close_price = row['Close'] / ref_close_price
+        norm_high_price = row['High'] / ref_high_price
+        norm_low_price = row['Low'] / ref_low_price
+        norm_turnover_ratio = row['Turnover_ratio'] / ref_turnover_ratio
+        norm_volumn = row['Volumn'] / ref_volumn
+
+        day_data = {'open': norm_open_price, 'close': norm_close_price, 'high': norm_high_price, 'low': norm_low_price, 'turnover_ratio': norm_turnover_ratio, 'volumn': norm_volumn}
+        forecast_norm.append(day_data)
+
+        '''
+        forecast_norm_open_price .append(norm_open_price)
+        forecast_norm_close_price.append(norm_close_price)
+        forecast_norm_high_price.append(norm_high_price)
+        forecast_norm_low_price.append(norm_low_price)
+        forecast_norm_turnover_ratio.append(norm_turnover_ratio)
+        forecast_norm_volumn.append(norm_volumn)
+        '''
+
+    label = {'history': history_norm, 'forecast': forecast_norm, 'class': sample_type}
+
+    return label
 
 def isNewStock(first_day):
     offset_day = first_day - trade_start_day
