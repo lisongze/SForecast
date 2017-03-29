@@ -12,8 +12,10 @@ low_ratio_thre1 = -0.05
 up_ratio_thre2 = 0.05
 low_ratio_thre2 = -0.15
 
-def isHalt(open_price, close_price, high_price, low_price):
+def isHalt(open_price, close_price, high_price, low_price, volume):
     if open_price==close_price==high_price==low_price:
+        return True
+    elif volume == 0 or np.isnan(volume)==True:
         return True
     else:
         return False
@@ -39,7 +41,7 @@ def doLabel(history, forecast, sample_type):
     ref_high_price = history['High'][-1]
     ref_low_price = history['Low'][-1]
     ref_turnover_ratio = history['Turnover_ratio'][-1]
-    ref_volumn = history['Volume'][-1]
+    ref_volume = history['Volume'][-1]
 
     history_norm = []
     forecast_norm = []
@@ -66,9 +68,9 @@ def doLabel(history, forecast, sample_type):
         norm_high_price = row['High'] / ref_high_price
         norm_low_price = row['Low'] / ref_low_price
         norm_turnover_ratio = row['Turnover_ratio'] / ref_turnover_ratio
-        norm_volumn = row['Volume'] / ref_volumn
+        norm_volume = row['Volume'] / ref_volume
 
-        day_data = {'open': norm_open_price, 'close': norm_close_price, 'high': norm_high_price, 'low': norm_low_price, 'turnover_ratio': norm_turnover_ratio, 'volumn': norm_volumn}
+        day_data = {'date': row.name, 'open': norm_open_price, 'close': norm_close_price, 'high': norm_high_price, 'low': norm_low_price, 'turnover_ratio': norm_turnover_ratio, 'volume': norm_volume}
         history_norm.append(day_data)
 
         '''
@@ -86,9 +88,9 @@ def doLabel(history, forecast, sample_type):
         norm_high_price = row['High'] / ref_high_price
         norm_low_price = row['Low'] / ref_low_price
         norm_turnover_ratio = row['Turnover_ratio'] / ref_turnover_ratio
-        norm_volumn = row['Volume'] / ref_volumn
+        norm_volume = row['Volume'] / ref_volume
 
-        day_data = {'open': norm_open_price, 'close': norm_close_price, 'high': norm_high_price, 'low': norm_low_price, 'turnover_ratio': norm_turnover_ratio, 'volumn': norm_volumn}
+        day_data = {'date': row.name, 'open': norm_open_price, 'close': norm_close_price, 'high': norm_high_price, 'low': norm_low_price, 'turnover_ratio': norm_turnover_ratio, 'volume': norm_volume}
         forecast_norm.append(day_data)
 
         '''
@@ -131,7 +133,8 @@ if __name__ == '__main__':
         close_price = csv_content['Close'][i]
         high_price = csv_content['High'][i]
         low_price = csv_content['Low'][i]
-        if isHalt(open_price, close_price, high_price, low_price)==True:
+        volume = csv_content['Volume'][i]
+        if isHalt(open_price, close_price, high_price, low_price, volume)==True:
             if halt_start==False:
                 halt_start = True
                 halt_start_index = i
@@ -178,16 +181,18 @@ if __name__ == '__main__':
     history_days = 30
     forecast_days = 14
     labels = []
+    classes = []
     for x in samples:
         end_day_index = x['days']-sample_len_thre+1
         for i in range(0, end_day_index, day_stride):
             history = csv_content.iloc[i+0 : i+history_days] 
             forecast = csv_content.iloc[i+history_days : i+history_days+forecast_days]
             sample_type = getSampleType(history, forecast)
-            if sample_type==1 or sample_type==2:
-                label = doLabel(history, forecast,sample_type)
-                label_history = label['history']
-                for x in label_history:
-                    print str(x) + ' '
-                print '-------------------------------'
-                labels.append(label)
+            label = doLabel(history, forecast,sample_type)
+            labels.append(label)
+            classes.append(sample_type)
+
+    rst_pd = pd.DataFrame(columns=['sample', 'class'])
+    rst_pd['sample'] = labels
+    rst_pd['class'] = classes
+    rst_pd.to_csv(infile + '.label.csv')
