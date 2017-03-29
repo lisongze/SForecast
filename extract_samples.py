@@ -89,7 +89,16 @@ if __name__ == '__main__':
     sample = {'start': sample_start_index, 'end': sample_end_index, 'days': sample_end_index - sample_start_index + 1}
     samples.append(sample)
 
-    samples = [x for x in samples if x['days']>sample_len_thre]
+    raw_samples = [x for x in samples if x['days']>sample_len_thre]
+    samples = []
+    for i in range(1, len(raw_samples), 1):
+        x = raw_samples[i]
+        if x['days']>sample_len_thre+halt_day_offset:
+            sample_start_index = x['start'] + halt_day_offset
+            sample_end_index = x['end']
+            days = sample_end_index - sample_start_index + 1
+            sample = {'start': sample_start_index, 'end': sample_end_index, 'days': days}
+            samples.append(sample)
     for x in samples:
         print 'start: ', x['start'], ', end: ', x['end'], ', days: ', x['days']
 
