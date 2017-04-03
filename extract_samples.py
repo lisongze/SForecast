@@ -7,7 +7,7 @@ import datetime
 trade_start_day = datetime.datetime.strptime('2015-01-04', '%Y-%m-%d')
 new_stock_day_offset = 120
 halt_day_offset = 20
-up_ratio_thre1 = 0.15
+up_ratio_thre1 = 0.10
 low_ratio_thre1 = -0.05
 up_ratio_thre2 = 0.05
 low_ratio_thre2 = -0.15
