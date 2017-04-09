@@ -8,12 +8,14 @@ from bokeh.io import output_notebook
 from bokeh.plotting import figure, show, output_file
 from bokeh.models import ColumnDataSource, Rect, HoverTool, Range1d, LinearAxis, WheelZoomTool, PanTool, ResetTool, ResizeTool, SaveTool
 #output_notebook()
+
 output_file("kline.html")
 
 infile = sys.argv[1]
 quotes = pd.read_csv(infile, index_col=[0])
 #quotes[quotes['Volume']==0]=np.nan
 quotes= quotes.dropna()
+
 openp=quotes['Open']
 closep=quotes['Close']
 highp=quotes['High']
@@ -33,7 +35,7 @@ quotes['Time']=quotes.index
 w = 12*60*60*1000 # half day in ms
 mids = (openp + closep)/2
 spans = abs(closep-openp)
-inc = closep > openp
+inc = closep >= openp
 dec = openp > closep
 
 quotes['Mids']=mids

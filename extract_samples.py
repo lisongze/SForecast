@@ -5,6 +5,7 @@ import pandas as pd
 import datetime
 import operator
 
+
 class SampleExtractor:
     def __init__(self, infile=''):
         self.time_format = '%Y-%m-%d'
@@ -81,10 +82,19 @@ class SampleExtractor:
         sample_end_index = len(self.csv_content.index) - 1
         sample = {'start': sample_start_index, 'end': sample_end_index, 'days': sample_end_index - sample_start_index + 1}
         samples.append(sample)
+        print '------------'
+        for i in xrange(len(samples)):
+            print str(samples[i])
+        print '++++++++++++'
 
         raw_samples = [x for x in samples if x['days']>self.sample_len_thre]
+        print '2------------'
+        for i in xrange(len(raw_samples)):
+            print str(raw_samples[i])
+        print '2++++++++++++'
+
         samples = []
-        for i in range(1, len(raw_samples), 1):
+        for i in range(0, len(raw_samples), 1):
             x = raw_samples[i]
             if x['days']>self.sample_len_thre + self.halt_day_offset:
                 sample_start_index = x['start'] + self.halt_day_offset
@@ -92,6 +102,8 @@ class SampleExtractor:
                 days = sample_end_index - sample_start_index + 1
                 sample = {'start': sample_start_index, 'end': sample_end_index, 'days': days}
                 samples.append(sample)
+        for i in xrange(len(samples)):
+            print str(samples[i])
         return samples
 
     def isHalt(self, open_price, close_price, high_price, low_price, volume):
@@ -145,8 +157,9 @@ class SampleExtractor:
         data = []
         classes = []
         for x in samples:
+            start_day_index = x['start']
             end_day_index = x['days']-self.sample_len_thre+1
-            for i in range(0, end_day_index, self.day_stride):
+            for i in range(start_day_index, end_day_index, self.day_stride):
                 history = self.csv_content.iloc[i+0 : i+self.history_days] 
                 forecast = self.csv_content.iloc[i+self.history_days : i+self.history_days+self.forecast_days]
                 sample_type = self.getSampleCls(history, forecast)
