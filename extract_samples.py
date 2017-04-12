@@ -122,6 +122,8 @@ class SampleExtractor:
         ref_turnover_ratio = history['Turnover_ratio'][-1]
         ref_volume = history['Volume'][-1]
         ref_monry = history['Money'][-1]
+        ref_date = history.index[-1]
+        buy_in_price = (ref_high_price + ref_low_price) / 2.0
 
         history_norm = []
         forecast_norm = []
@@ -148,7 +150,7 @@ class SampleExtractor:
             day_data = {'date': row.name, 'open': norm_open_price, 'close': norm_close_price, 'high': norm_high_price, 'low': norm_low_price, 'turnover_ratio': norm_turnover_ratio, 'volume': norm_volume}
             forecast_norm.append(day_data)
 
-        label = {'history': history_norm, 'forecast': forecast_norm, 'class': sample_type}
+        label = {'trade_date': ref_date, 'trade_price': buy_in_price,'history': history_norm, 'forecast': forecast_norm, 'class': sample_type}
 
         return label
 
