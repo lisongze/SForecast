@@ -36,12 +36,12 @@ for x in buy_samples:
     print x['trade_date'], ' ', x['trade_price']
 #print buy_samples
 
-price_offset = 2
+price_offset = 0.20
 buy_trade_date = [(x['trade_date']) for x in buy_samples]
-buy_trade_price = [(x['trade_price']+price_offset) for x in buy_samples]
+buy_trade_price = [(x['trade_price']*(1+price_offset)) for x in buy_samples]
 buy_trade_date = mydatetime(buy_trade_date)
 sell_trade_date = [(x['trade_date']) for x in sell_samples]
-sell_trade_price = [(x['trade_price']-price_offset) for x in sell_samples]
+sell_trade_price = [(x['trade_price']*(1-price_offset)) for x in sell_samples]
 sell_trade_date = mydatetime(sell_trade_date)
 p1.circle(buy_trade_date, buy_trade_price, size=4, legend='buy', color='red', alpha=0.2)
 p1.circle(sell_trade_date, sell_trade_price, size=4, legend='sell', color='green', alpha=0.2)
