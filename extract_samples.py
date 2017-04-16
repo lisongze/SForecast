@@ -30,6 +30,7 @@ class SampleExtractor:
     def loadDataFromFile(self, infile):
         try:
             self.csv_content = pd.read_csv(infile, index_col=[0])
+            print self.csv_content.index
         except Exception, e:
             print Exception, ' : ', e
 
@@ -78,21 +79,12 @@ class SampleExtractor:
             sample = {'start': sample_start_index, 'end': sample_end_index, 'days': sample_end_index - sample_start_index + 1}
             samples.append(sample)
             sample_start_index = x['end']
-            print 'start: ', x['start'], ', end: ', x['end'], ', days: ', x['days']
+            #print 'start: ', x['start'], ', end: ', x['end'], ', days: ', x['days']
         sample_end_index = len(self.csv_content.index) - 1
         sample = {'start': sample_start_index, 'end': sample_end_index, 'days': sample_end_index - sample_start_index + 1}
         samples.append(sample)
-        print '------------'
-        for i in xrange(len(samples)):
-            print str(samples[i])
-        print '++++++++++++'
 
         raw_samples = [x for x in samples if x['days']>self.sample_len_thre]
-        print '2------------'
-        for i in xrange(len(raw_samples)):
-            print str(raw_samples[i])
-        print '2++++++++++++'
-
         samples = []
         for i in range(0, len(raw_samples), 1):
             x = raw_samples[i]
@@ -102,8 +94,7 @@ class SampleExtractor:
                 days = sample_end_index - sample_start_index + 1
                 sample = {'start': sample_start_index, 'end': sample_end_index, 'days': days}
                 samples.append(sample)
-        for i in xrange(len(samples)):
-            print str(samples[i])
+
         return samples
 
     def isHalt(self, open_price, close_price, high_price, low_price, volume):
@@ -124,6 +115,8 @@ class SampleExtractor:
         ref_monry = history['Money'][-1]
         ref_date = history.index[-1]
         buy_in_price = (ref_high_price + ref_low_price) / 2.0
+        if (ref_volume==0 or np.isnan(ref_volume)):
+            print '++++++++++++', ref_date
 
         history_norm = []
         forecast_norm = []
@@ -134,7 +127,10 @@ class SampleExtractor:
             norm_high_price = row['High'] / ref_high_price
             norm_low_price = row['Low'] / ref_low_price
             norm_turnover_ratio = row['Turnover_ratio'] / ref_turnover_ratio
-            norm_volume = row['Volume'] / ref_volume
+            try:
+                norm_volume = row['Volume'] / ref_volume
+            except Exception, e:
+                print '-------------', ref_date
 
             day_data = {'date': row.name, 'open': norm_open_price, 'close': norm_close_price, 'high': norm_high_price, 'low': norm_low_price, 'turnover_ratio': norm_turnover_ratio, 'volume': norm_volume}
             history_norm.append(day_data)
@@ -160,7 +156,7 @@ class SampleExtractor:
         classes = []
         for x in samples:
             start_day_index = x['start']
-            end_day_index = x['days']-self.sample_len_thre+1
+            end_day_index = start_day_index + x['days']-self.sample_len_thre+1
             for i in range(start_day_index, end_day_index, self.day_stride):
                 history = self.csv_content.iloc[i+0 : i+self.history_days] 
                 forecast = self.csv_content.iloc[i+self.history_days : i+self.history_days+self.forecast_days]
@@ -236,88 +232,3 @@ if __name__ == '__main__':
     rst_pd['sample'] = data
     rst_pd['class'] = label
     rst_pd.to_csv(infile + '.label.csv')
-
-    '''
-    csv_content = pd.read_csv(infile, index_col=[0])
-    first_day = datetime.datetime.strptime(csv_content.index[0],'%Y-%m-%d')
-    if isNewStock(first_day)==True:
-        csv_content = csv_content.icol[new_stock_day_offset:]
-    date = [datetime.datetime.strptime(x, '%Y-%m-%d') for x in csv_content.index]
-    sample_len_thre = 44
-    epoch_start = x[0]
-    epoch_end = x[0]
-    halt_epochs = []
-    halt_start = False
-    halt_end = False
-    halt_start_index = 0
-    halt_end_index = 0
-    halt_days = 0
-    for i in xrange(len(date)):
-        open_price = csv_content['Open'][i]
-        close_price = csv_content['Close'][i]
-        high_price = csv_content['High'][i]
-        low_price = csv_content['Low'][i]
-        volume = csv_content['Volume'][i]
-        if isHalt(open_price, close_price, high_price, low_price, volume)==True:
-            if halt_start==False:
-                halt_start = True
-                halt_start_index = i
-                halt_end_index = i
-                halt_days = halt_days + 1
-            else:
-                halt_end_index = i
-                halt_days = halt_days + 1
-        else:
-            if halt_start==True:
-                halt = {'start': halt_start_index, 'end': halt_end_index, 'days': halt_days}
-                halt_start = False
-                halt_days = 0
-                halt_epochs.append(halt)
-    
-    halt_epochs = [x for x in halt_epochs if x['days']>3]
-    sample_start_index = 0
-    sample_end_index = 0
-    samples = []
-    for x in halt_epochs:
-        sample_end_index = x['start']
-        sample = {'start': sample_start_index, 'end': sample_end_index, 'days': sample_end_index - sample_start_index + 1}
-        samples.append(sample)
-        sample_start_index = x['end']
-        print 'start: ', x['start'], ', end: ', x['end'], ', days: ', x['days']
-    sample_end_index = len(csv_content.index) - 1
-    sample = {'start': sample_start_index, 'end': sample_end_index, 'days': sample_end_index - sample_start_index + 1}
-    samples.append(sample)
-
-    raw_samples = [x for x in samples if x['days']>sample_len_thre]
-    samples = []
-    for i in range(1, len(raw_samples), 1):
-        x = raw_samples[i]
-        if x['days']>sample_len_thre+halt_day_offset:
-            sample_start_index = x['start'] + halt_day_offset
-            sample_end_index = x['end']
-            days = sample_end_index - sample_start_index + 1
-            sample = {'start': sample_start_index, 'end': sample_end_index, 'days': days}
-            samples.append(sample)
-    for x in samples:
-        print 'start: ', x['start'], ', end: ', x['end'], ', days: ', x['days']
-
-    day_stride = 1
-    history_days = 30
-    forecast_days = 14
-    labels = []
-    classes = []
-    for x in samples:
-        end_day_index = x['days']-sample_len_thre+1
-        for i in range(0, end_day_index, day_stride):
-            history = csv_content.iloc[i+0 : i+history_days] 
-            forecast = csv_content.iloc[i+history_days : i+history_days+forecast_days]
-            sample_type = getSampleType(history, forecast)
-            label = doLabel(history, forecast,sample_type)
-            labels.append(label)
-            classes.append(sample_type)
-
-    rst_pd = pd.DataFrame(columns=['sample', 'class'])
-    rst_pd['sample'] = labels
-    rst_pd['class'] = classes
-    rst_pd.to_csv(infile + '.label.csv')
-    '''
