@@ -115,7 +115,7 @@ class SampleExtractor:
         ref_monry = history['Money'][-1]
         ref_date = history.index[-1]
         buy_in_price = (ref_high_price + ref_low_price) / 2.0
-        if (ref_volume==0 or np.isnan(ref_volume)):
+        if (ref_volume<1e-6 or np.isnan(ref_volume)):
             print '++++++++++++', ref_date
 
         history_norm = []
@@ -156,14 +156,24 @@ class SampleExtractor:
         classes = []
         for x in samples:
             start_day_index = x['start']
-            end_day_index = start_day_index + x['days']-self.sample_len_thre+1
-            for i in range(start_day_index, end_day_index, self.day_stride):
-                history = self.csv_content.iloc[i+0 : i+self.history_days] 
-                forecast = self.csv_content.iloc[i+self.history_days : i+self.history_days+self.forecast_days]
+            end_day_index = start_day_index + x['days'] #-self.sample_len_thre+1
+            tmp_csv_content = self.csv_content.iloc[start_day_index : end_day_index]
+            #filtered_csv_content = tmp_csv_content[(tmp_csv_content.Open==tmp_csv_content.Close==tmp_csv_content.High==tmp_csv_content.Low)==False]
+            filtered_csv_content = tmp_csv_content.dropna()
+            for i in range(0, len(filtered_csv_content.index)-self.sample_len_thre, self.day_stride):
+                history = filtered_csv_content.iloc[i+0 : i+self.history_days] 
+                forecast = filtered_csv_content.iloc[i+self.history_days : i+self.history_days+self.forecast_days]
                 sample_type = self.getSampleCls(history, forecast)
                 d = self.normSample(history, forecast, sample_type)
                 data.append(d)
                 classes.append(sample_type)
+            #for i in range(start_day_index, end_day_index, self.day_stride):
+            #    history = self.csv_content.iloc[i+0 : i+self.history_days] 
+            #    forecast = self.csv_content.iloc[i+self.history_days : i+self.history_days+self.forecast_days]
+            #    sample_type = self.getSampleCls(history, forecast)
+            #    d = self.normSample(history, forecast, sample_type)
+            #    data.append(d)
+            #    classes.append(sample_type)
         return data, classes
 
     def getSampleCls(self, history, forecast):
