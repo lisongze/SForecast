@@ -5,9 +5,9 @@ import os, sys
 def read_label(label_file):
     csv_content = pd.read_csv(label_file)
     sample = csv_content['sample']
-    sample = [eval(x) for x in sample]
-    print sample[0]
-    '''
+    g = {'nan' : 0}
+    inf = {'inf' : 0}
+    sample = [eval(x, g, inf) for x in sample]
     cls = csv_content['class']
 
     data = []
@@ -31,5 +31,5 @@ def read_label(label_file):
         label.append(l)
     rst_data = np.asarray(data)
     rst_label = np.asarray(label)
-    return rst_data, rst_label
-    '''
+    return data, label
+    #return rst_data, rst_label
