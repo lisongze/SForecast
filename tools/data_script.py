@@ -114,5 +114,5 @@ if __name__ == '__main__':
 
     #print s.index
     s.to_csv(outfile)
-    nan_s.to_csv(outfile+'.nan.csv')
-    cleaned_s.to_csv(outfile+'.cleaned.csv')
+    #nan_s.to_csv(outfile+'.nan.csv')
+    #cleaned_s.to_csv(outfile+'.cleaned.csv')
