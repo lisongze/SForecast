@@ -30,7 +30,7 @@ class SampleExtractor:
     def loadDataFromFile(self, infile):
         try:
             self.csv_content = pd.read_csv(infile, index_col=[0])
-            print self.csv_content.index
+            #print self.csv_content.index
         except Exception, e:
             print Exception, ' : ', e
 
@@ -40,10 +40,10 @@ class SampleExtractor:
         close_price = self.csv_content['Close'][index]
         high_price = self.csv_content['High'][index]
         low_price = self.csv_content['Low'][index]
-        turnover_ratio = self.csv_content['Turnover_ratio'][index]
         volume = self.csv_content['Volume'][index]
+        turnover_ratio = self.csv_content['Turnover_ratio'][index]
         money = self.csv_content['Money'][index]
-        return time, open_price, close_price, high_price, low_price, volume, money
+        return time, open_price, close_price, high_price, low_price, volume, turnover_ratio ,money
 
     def getDataSegment(self):
         halt_epochs = []
@@ -53,8 +53,8 @@ class SampleExtractor:
         halt_end_index = 0
         halt_days = 0
         for i in xrange(len(self.csv_content.index)):
-            time, open_price, close_price, high_price, low_price, volume, money = self.getOneDayData(i)
-            if self.isHalt(open_price, close_price, high_price, low_price, volume)==True:
+            time, open_price, close_price, high_price, low_price, volume, turnover_ratio, money = self.getOneDayData(i)
+            if self.isHalt(open_price, close_price, high_price, low_price, volume, turnover_ratio, money)==True:
                 if halt_start==False:
                     halt_start = True
                     halt_start_index = i
@@ -97,13 +97,17 @@ class SampleExtractor:
 
         return samples
 
-    def isHalt(self, open_price, close_price, high_price, low_price, volume):
+    def isHalt(self, open_price, close_price, high_price, low_price, volume, turnover_ratio, money):
         if open_price==close_price==high_price==low_price:
             return True
         elif volume<1e-6 or np.isnan(volume)==True:
             return True
+        elif turnover_ratio<1e-6 or np.isnan(turnover_ratio)==True:
+            return True
+        elif money<1e-6 or np.isnan(money)==True:
+            return True
         else:
-            return
+            return False
 
     def normSample(self, history, forecast, sample_type):
         ref_open_price = history['Open'][-1]
@@ -115,8 +119,6 @@ class SampleExtractor:
         ref_monry = history['Money'][-1]
         ref_date = history.index[-1]
         buy_in_price = (ref_high_price + ref_low_price) / 2.0
-        if (ref_volume<1e-6 or np.isnan(ref_volume)):
-            print '++++++++++++', ref_date
 
         history_norm = []
         forecast_norm = []
@@ -160,6 +162,8 @@ class SampleExtractor:
             tmp_csv_content = self.csv_content.iloc[start_day_index : end_day_index]
             #filtered_csv_content = tmp_csv_content[(tmp_csv_content.Open==tmp_csv_content.Close==tmp_csv_content.High==tmp_csv_content.Low)==False]
             filtered_csv_content = tmp_csv_content.dropna()
+            filtered_csv_content = filtered_csv_content[filtered_csv_content.Turnover_ratio>1e-6]
+            filtered_csv_content = filtered_csv_content[filtered_csv_content.Volume>1e-6]
             for i in range(0, len(filtered_csv_content.index)-self.sample_len_thre, self.day_stride):
                 history = filtered_csv_content.iloc[i+0 : i+self.history_days] 
                 forecast = filtered_csv_content.iloc[i+self.history_days : i+self.history_days+self.forecast_days]
@@ -233,6 +237,7 @@ class SampleExtractor:
 
 if __name__ == '__main__':
     infile = sys.argv[1]
+    outfile = sys.argv[2]
     extractor = SampleExtractor()
     extractor.loadDataFromFile(infile)
     samples = extractor.getDataSegment()
@@ -241,4 +246,5 @@ if __name__ == '__main__':
     rst_pd = pd.DataFrame(columns=['sample', 'class'])
     rst_pd['sample'] = data
     rst_pd['class'] = label
-    rst_pd.to_csv(infile + '.label.csv')
+    #rst_pd.to_csv(infile + '.label.csv')
+    rst_pd.to_csv(outfile)
